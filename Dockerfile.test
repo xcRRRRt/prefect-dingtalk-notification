@@ -1,0 +1,13 @@
+# `prefecthq/prefect:latest` is a legacy Prefect 1 image (1.4.1/Python 3.7).
+# `3-latest` is the current floating tag for Prefect 3 and is compatible with
+# this package's NotificationBlock and Automation APIs.
+FROM prefecthq/prefect:3-latest
+
+WORKDIR /opt/prefect-dingtalk-notification
+COPY . .
+
+# The package must be installed in the server image so that the Automation
+# service can deserialize and execute the custom NotificationBlock.
+RUN pip install --no-cache-dir .
+
+CMD ["prefect", "server", "start", "--host", "0.0.0.0"]

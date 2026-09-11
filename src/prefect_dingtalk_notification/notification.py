@@ -8,10 +8,9 @@ import base64
 import hashlib
 import hmac
 import time
-import urllib.parse
 
 import httpx
-from prefect.blocks.abstract import NotificationBlock
+from prefect.blocks.abstract import NotificationBlock, NotificationError
 from pydantic import BaseModel, Field, SecretStr, ValidationError
 
 
@@ -27,9 +26,10 @@ class DingTalkCustomRobotGroupWebhookNotification(NotificationBlock):
 
     base_url: str = Field(default="https://oapi.dingtalk.com/robot/send")
     access_token: SecretStr = Field()
-    secret: SecretStr | None = Field()
+    secret: SecretStr | None = Field(default=None)
 
     async def notify(self, body: str, subject: str | None = None) -> None:
+        """Send a complete DingTalk JSON string; subject is intentionally ignored."""
         access_token = self.access_token.get_secret_value()
         params = {"access_token": access_token}
 
@@ -42,29 +42,30 @@ class DingTalkCustomRobotGroupWebhookNotification(NotificationBlock):
                 string_to_sign.encode("utf-8"),
                 digestmod=hashlib.sha256,
             ).digest()
-            sign = urllib.parse.quote_plus(base64.b64encode(hmac_code))
-
             params["timestamp"] = timestamp
-            params["sign"] = sign
+            params["sign"] = base64.b64encode(hmac_code).decode("utf-8")
 
         logger = self.logger
 
         async with httpx.AsyncClient() as client:
-            resp = await client.post(
-                self.base_url,
-                params=params,
-                content=body,
-                headers={"Content-Type": "application/json"},
-            )
-
             try:
-                resp.raise_for_status()
-            except httpx.HTTPStatusError as e:
-                logger.exception(
-                    f"{self.__class__.__name__} notify error",
-                    exc_info=e,
+                resp = await client.post(
+                    self.base_url,
+                    params=params,
+                    content=body,
+                    headers={"Content-Type": "application/json"},
                 )
-                raise
+                resp.raise_for_status()
+            except httpx.HTTPError as e:
+                if isinstance(e, httpx.HTTPStatusError):
+                    detail = f"HTTP status {e.response.status_code}"
+                else:
+                    detail = e.__class__.__name__
+                error_log = f"{self.__class__.__name__} notify request failed ({detail})"
+                # The request URL contains access_token and sign query
+                # parameters. Do not log or propagate the raw HTTPX error.
+                logger.error(error_log)
+                raise NotificationError(log=error_log) from None
 
             try:
                 result = DingTalkCustomRobotGroupWebhookResponse.model_validate_json(
@@ -76,10 +77,12 @@ class DingTalkCustomRobotGroupWebhookNotification(NotificationBlock):
                     f"Unexpected {self.__class__.__name__} notify response content: {resp.content}",
                     exc_info=e,
                 )
-                raise
+                raise NotificationError(
+                    log=f"Unexpected {self.__class__.__name__} notify response content: {resp.content}; {e}"
+                ) from e
 
             logger.info(str(result))
             if result.code != 0:
-                raise RuntimeError(
-                    f"Unexpected {self.__class__.__name__} notify error code: {result!s}"
+                raise NotificationError(
+                    log=f"Unexpected {self.__class__.__name__} notify error code: {result!s}"
                 )

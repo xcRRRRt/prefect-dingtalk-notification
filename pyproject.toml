@@ -5,20 +5,45 @@ build-backend = "uv_build"
 [project]
 name = "prefect-dingtalk-notification"
 version = "0.1.0"
-description = "Add your description here"
+description = "Prefect 3 NotificationBlock for DingTalk custom robot webhooks"
 readme = "README.md"
 authors = [
-    { name = "zhangxiaoyang", email = "xcrt@foxmail.com" }
+    { name = "xcRRRRt", email = "xcrt@foxmail.com" }
 ]
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.10,<3.15"
-dependencies = [
-    "httpx",
-    "prefect>=3.8",
-    "pydantic>=2",
+keywords = ["dingtalk", "prefect", "notification", "webhook", "automation"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
+dependencies = [
+    "httpx>=0.27,<1",
+    "prefect>=3.8,<4",
+    "pydantic>=2,<3",
+]
+
+[project.urls]
+Homepage = "https://github.com/xcRRRRt/prefect-dingtalk-notification"
+Repository = "https://github.com/xcRRRRt/prefect-dingtalk-notification"
+Issues = "https://github.com/xcRRRRt/prefect-dingtalk-notification/issues"
+
+[project.entry-points."prefect.collections"]
+prefect_dingtalk_notification = "prefect_dingtalk_notification"
 
 [dependency-groups]
 dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.24",
     "ruff",
     "ty",
 ]
