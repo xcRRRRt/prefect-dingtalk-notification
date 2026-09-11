@@ -1,0 +1,24 @@
+[build-system]
+requires = ["uv_build>=0.12.0,<0.13.0"]
+build-backend = "uv_build"
+
+[project]
+name = "prefect-dingtalk-notification"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "zhangxiaoyang", email = "xcrt@foxmail.com" }
+]
+requires-python = ">=3.10,<3.15"
+dependencies = [
+    "httpx",
+    "prefect>=3.8",
+    "pydantic>=2",
+]
+
+[dependency-groups]
+dev = [
+    "ruff",
+    "ty",
+]
