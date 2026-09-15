@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "prefect-dingtalk-notification"
-version = "0.1.0.dev0"
+version = "0.1.0"
 description = "Prefect NotificationBlock for DingTalk Custom Robot Webhooks"
 readme = "README.md"
 authors = [
