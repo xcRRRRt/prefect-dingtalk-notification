@@ -46,7 +46,7 @@ async def main() -> None:
     )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     asyncio.run(main())
 ```
 
@@ -75,7 +75,9 @@ block_document_id = notification_block.save("dingtalk-demo")
 ```python
 from prefect_dingtalk_notification import DingTalkCustomRobotGroupWebhookNotification
 
-notification_block = DingTalkCustomRobotGroupWebhookNotification.load("dingtalk-production")
+notification_block = DingTalkCustomRobotGroupWebhookNotification.load(
+    "dingtalk-production"
+)
 ```
 
 #### 在 Automation 中发送通知
@@ -83,8 +85,6 @@ notification_block = DingTalkCustomRobotGroupWebhookNotification.load("dingtalk-
 Prefect Automation 的 `SendNotification` action 接受 Block document ID。下面的示例会在收到指定事件时调用本项目的 Block：
 
 ```python
-import os
-
 from prefect.automations import Automation, EventTrigger, SendNotification
 from prefect.events import emit_event
 from prefect_dingtalk_notification import DingTalkCustomRobotGroupWebhookNotification
@@ -106,9 +106,7 @@ automation = Automation(
         SendNotification(
             block_document_id=block_id,
             subject="Build notification",
-            body=(
-                '{"msgtype":"text","text":{"content":"Prefect CI build finished"}}'
-            ),
+            body=('{"msgtype":"text","text":{"content":"Prefect CI build finished"}}'),
         )
     ],
 ).create()
