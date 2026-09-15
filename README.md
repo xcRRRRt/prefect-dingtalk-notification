@@ -50,9 +50,19 @@ if __name__ == '__main__':
     asyncio.run(main())
 ```
 
+> [!NOTE]
+> `body` 是钉钉机器人消息的完整 JSON 请求体，会作为 HTTP 请求体原样发送，需要按
+> [消息类型](https://open.dingtalk.com/document/development/custom-robots-send-group-messages)
+> 自行构建字符串
+
+> [!NOTE]
+> `DingTalkCustomRobotGroupWebhookNotification.notify` 的 `subject` 参数无效, 若传入会被忽略
+
 #### 保存为 `Block` 使用
 
 ```python
+from prefect_dingtalk_notification import DingTalkCustomRobotGroupWebhookNotification
+
 notification_block = DingTalkCustomRobotGroupWebhookNotification(
     access_token="<access-token>",
     secret="<secret>",
@@ -63,6 +73,8 @@ block_document_id = notification_block.save("dingtalk-demo")
 加载 `Block`
 
 ```python
+from prefect_dingtalk_notification import DingTalkCustomRobotGroupWebhookNotification
+
 notification_block = DingTalkCustomRobotGroupWebhookNotification.load("dingtalk-production")
 ```
 

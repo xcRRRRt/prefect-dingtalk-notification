@@ -1,8 +1,3 @@
-"""
-DingTalk Custom Robot Group Messages
-
-https://open.dingtalk.com/document/development/custom-robots-send-group-messages
-"""
 import base64
 import hashlib
 import hmac
@@ -14,26 +9,51 @@ from pydantic import BaseModel, Field, SecretStr, ValidationError
 
 
 class DingTalkCustomRobotGroupWebhookResponse(BaseModel):
-    code: int = Field(alias="errcode")
-    message: str = Field(alias="errmsg")
+    """
+    References:
+        [错误码](https://open.dingtalk.com/document/development/custom-robots-send-group-messages#7894500ce8la8)
+    """
+
+    code: int = Field(alias="errcode", description="0 means success")
+    message: str = Field(alias="errmsg", description="Error message")
 
 
 class DingTalkCustomRobotGroupWebhookNotification(NotificationBlock):
+    """
+    References:
+        [自定义机器人发送群消息](https://open.dingtalk.com/document/development/custom-robots-send-group-messages)
+        [机器人消息类型](https://open.dingtalk.com/document/development/robot-message-type)
+    """
+
     _block_type_name = "DingTalk Robot Notification"
     _logo_url = "https://img.alicdn.com/imgextra/i3/O1CN017PqYP51OX3bSJGxQY_!!6000000001714-2-tps-200-200.png"
-    _description = "DingTalk Custom Robot Group Message Using Webhook"
+    _description = "钉钉自定义机器人-使用Webhook (https://open.dingtalk.com/document/development/custom-robots-send-group-messages)"
 
-    base_url: str = Field(default="https://oapi.dingtalk.com/robot/send")
-    access_token: SecretStr = Field()
-    secret: SecretStr | None = Field(default=None)
+    base_url: str = Field(
+        default="https://oapi.dingtalk.com/robot/send",
+        description="DingTalk Custom Robot Group Webhook URL.",
+    )
+
+    access_token: SecretStr = Field(
+        description="access_token,取自Webhook地址的查询参数"
+    )
+
+    secret: SecretStr | None = Field(
+        default=None,
+        description="加签密钥, 仅当机器人安全设置选择“加签”时需要提供",
+    )
 
     async def notify(self, body: str, subject: str | None = None) -> None:
         """
         Send Notification
 
         Args:
-            body: Message body
-            subject: Not used, will be ignored
+            body: 请求体, 需按照 [自定义机器人发送群消息](https://open.dingtalk.com/document/development/custom-robots-send-group-messages) 自行构建字符串
+            subject: 未使用, 若传入会被忽略
+
+        References:
+            [自定义机器人发送群消息](https://open.dingtalk.com/document/development/custom-robots-send-group-messages)
+            [机器人消息类型](https://open.dingtalk.com/document/development/robot-message-type)
         """
         access_token = self.access_token.get_secret_value()
         params = {"access_token": access_token}
@@ -66,7 +86,9 @@ class DingTalkCustomRobotGroupWebhookNotification(NotificationBlock):
                     detail = f"HTTP status {e.response.status_code}"
                 else:
                     detail = e.__class__.__name__
-                error_log = f"{self.__class__.__name__} notify request failed ({detail})"
+                error_log = (
+                    f"{self.__class__.__name__} notify request failed ({detail})"
+                )
                 # The request URL contains access_token and sign query
                 # parameters. Do not log or propagate the raw HTTPX error.
                 logger.error(error_log)
