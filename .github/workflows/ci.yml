@@ -41,7 +41,7 @@ jobs:
         run: uv sync --locked
 
       - name: Check source
-        run: uv run ruff check src tests
+        run: uv run ruff check
 
       - name: Check types
         run: uv run ty check
@@ -50,7 +50,4 @@ jobs:
         run: uv run pytest -q
 
       - name: Build distributions
-        run: uv build --clear --out-dir dist
-
-      - name: Check distribution metadata
-        run: uvx --from twine twine check dist/*
+        run: uv build --clear

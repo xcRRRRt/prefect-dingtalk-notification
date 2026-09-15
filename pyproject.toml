@@ -4,8 +4,8 @@ build-backend = "uv_build"
 
 [project]
 name = "prefect-dingtalk-notification"
-version = "0.1.0"
-description = "Prefect 3 NotificationBlock for DingTalk custom robot webhooks"
+version = "0.1.0.dev0"
+description = "Prefect NotificationBlock for DingTalk Custom Robot Webhooks"
 readme = "README.md"
 authors = [
     { name = "xcRRRRt", email = "xcrt@foxmail.com" }
@@ -44,6 +44,7 @@ prefect_dingtalk_notification = "prefect_dingtalk_notification"
 dev = [
     "pytest>=8",
     "pytest-asyncio>=0.24",
+    "respx>=0.22,<1",
     "ruff",
     "ty",
 ]

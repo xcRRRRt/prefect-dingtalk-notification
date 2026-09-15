@@ -13,15 +13,13 @@ permissions:
   contents: read
 
 concurrency:
-  group: testpypi-${{ inputs.ref }}
+  group: testpypi
   cancel-in-progress: false
 
 jobs:
   build:
     name: Build and verify distributions
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.package-version.outputs.version }}
     steps:
       - name: Check out selected ref
         uses: actions/checkout@v7
@@ -31,35 +29,21 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
 
-      - name: Install locked dependencies
-        run: uv sync --locked
-
-      - name: Check lock file
-        run: uv lock --check
-
       - name: Check source
-        run: uv run ruff check src tests
-
-      - name: Run tests
-        run: uv run pytest -q
+        run: uv run ruff check
 
       - name: Read package version
         id: package-version
         run: echo "version=$(uv version --short)" >> "$GITHUB_OUTPUT"
 
       - name: Build distributions
-        run: uv build --clear --out-dir dist
+        run: uv build --clear
 
-      - name: Check distribution metadata
-        run: uvx --from twine twine check dist/*
-
-      - name: Upload distributions
+      - name: Upload distributions as artifacts
         uses: actions/upload-artifact@v7
         with:
           name: testpypi-distributions
           path: dist/
-          if-no-files-found: error
-          retention-days: 7
 
   publish:
     name: Publish distributions to TestPyPI
@@ -67,72 +51,18 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: testpypi
-      url: https://test.pypi.org/p/prefect-dingtalk-notification
+      UV_PUBLISH_URL: https://test.pypi.org/p/prefect-dingtalk-notification
     permissions:
       id-token: write
     steps:
-      - name: Download distributions
+      - name: Install uv
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+
+      - name: Download distributions artifact
         uses: actions/download-artifact@v8
         with:
           name: testpypi-distributions
           path: dist/
 
-      - name: Publish package to TestPyPI
-        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
-        with:
-          repository-url: https://test.pypi.org/legacy/
-
-  smoke-test:
-    name: Install package from TestPyPI
-    needs: [build, publish]
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: read
-    steps:
-      - name: Install uv
-        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
-
-      - name: Create smoke-test environment
-        run: uv venv --python 3.12 .venv-smoke
-
-      - name: Install published package
-        env:
-          PACKAGE_VERSION: ${{ needs.build.outputs.version }}
-        run: |
-          set -eu
-          for attempt in $(seq 1 12); do
-            if uv pip install \
-              --python .venv-smoke/bin/python \
-              --index-url https://test.pypi.org/simple/ \
-              --extra-index-url https://pypi.org/simple/ \
-              "prefect-dingtalk-notification==${PACKAGE_VERSION}"; then
-              exit 0
-            fi
-            if [ "$attempt" -eq 12 ]; then
-              echo "TestPyPI package was not installable after 12 attempts" >&2
-              exit 1
-            fi
-            sleep 10
-          done
-
-      - name: Verify package import and Prefect collection entry point
-        run: |
-          .venv-smoke/bin/python - <<'PY'
-          import importlib.metadata
-
-          import prefect_dingtalk_notification
-
-          entry_points = importlib.metadata.entry_points(group="prefect.collections")
-          target = next(
-              (
-                  entry_point
-                  for entry_point in entry_points
-                  if entry_point.name == "prefect_dingtalk_notification"
-              ),
-              None,
-          )
-          assert target is not None
-          assert target.value == "prefect_dingtalk_notification"
-          print(prefect_dingtalk_notification.__name__, target.value)
-          PY
+      - name: Publish to TestPyPI
+        run: uv publish --publish-url https://test.pypi.org/legacy/

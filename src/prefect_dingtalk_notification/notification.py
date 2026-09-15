@@ -3,7 +3,6 @@ DingTalk Custom Robot Group Messages
 
 https://open.dingtalk.com/document/development/custom-robots-send-group-messages
 """
-
 import base64
 import hashlib
 import hmac
@@ -29,7 +28,13 @@ class DingTalkCustomRobotGroupWebhookNotification(NotificationBlock):
     secret: SecretStr | None = Field(default=None)
 
     async def notify(self, body: str, subject: str | None = None) -> None:
-        """Send a complete DingTalk JSON string; subject is intentionally ignored."""
+        """
+        Send Notification
+
+        Args:
+            body: Message body
+            subject: Not used, will be ignored
+        """
         access_token = self.access_token.get_secret_value()
         params = {"access_token": access_token}
 

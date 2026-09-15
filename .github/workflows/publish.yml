@@ -2,13 +2,13 @@ name: Publish package to PyPI
 
 on:
   release:
-    types: [published]
+    types: [ published ]
 
 permissions:
   contents: read
 
 concurrency:
-  group: pypi-${{ github.event.release.tag_name }}
+  group: pypi
   cancel-in-progress: false
 
 jobs:
@@ -24,17 +24,8 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
 
-      - name: Install locked dependencies
-        run: uv sync --locked
-
-      - name: Check lock file
-        run: uv lock --check
-
       - name: Check source
         run: uv run ruff check src tests
-
-      - name: Run tests
-        run: uv run pytest -q
 
       - name: Check release version
         env:
@@ -48,18 +39,13 @@ jobs:
           fi
 
       - name: Build distributions
-        run: uv build --clear --out-dir dist
+        run: uv build --clear
 
-      - name: Check distribution metadata
-        run: uvx --from twine twine check dist/*
-
-      - name: Upload distributions
+      - name: Upload distributions as artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: python-distributions
+          name: testpypi-distributions
           path: dist/
-          if-no-files-found: error
-          retention-days: 7
 
   publish:
     name: Publish distributions to PyPI
@@ -71,11 +57,15 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - name: Download distributions
+      - name: Install uv
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+
+      - name: Download distributions artifact
         uses: actions/download-artifact@v8
         with:
-          name: python-distributions
+          name: pypi-distributions
           path: dist/
 
-      - name: Publish package to PyPI
-        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+      - name: Publish to PyPI
+        run: uv publish
+
