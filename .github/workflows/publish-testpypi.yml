@@ -51,7 +51,6 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: testpypi
-      UV_PUBLISH_URL: https://test.pypi.org/p/prefect-dingtalk-notification
     permissions:
       id-token: write
     steps:
