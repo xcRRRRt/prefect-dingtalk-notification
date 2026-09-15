@@ -47,7 +47,7 @@ jobs:
         run: uv run ty check
 
       - name: Run tests
-        run: uv run pytest -q
+        run: uv run --group test pytest -q
 
       - name: Build distributions
         run: uv build --clear

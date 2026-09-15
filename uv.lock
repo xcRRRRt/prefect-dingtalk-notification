@@ -1310,11 +1310,13 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "ruff" },
+    { name = "ty" },
+]
+test = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "respx" },
-    { name = "ruff" },
-    { name = "ty" },
 ]
 
 [package.metadata]
@@ -1326,11 +1328,13 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "ruff" },
+    { name = "ty" },
+]
+test = [
     { name = "pytest", specifier = ">=8" },
     { name = "pytest-asyncio", specifier = ">=0.24" },
     { name = "respx", specifier = ">=0.22,<1" },
-    { name = "ruff" },
-    { name = "ty" },
 ]
 
 [[package]]
