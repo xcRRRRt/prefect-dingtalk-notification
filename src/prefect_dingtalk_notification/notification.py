@@ -19,7 +19,7 @@ class DingTalkCustomRobotGroupWebhookResponse(BaseModel):
 
 
 class DingTalkCustomRobotGroupWebhookNotification(NotificationBlock):
-    _block_type_name = "DingTalk Robot Notification With Sign"
+    _block_type_name = "DingTalk Robot Notification"
     _logo_url = "https://img.alicdn.com/imgextra/i3/O1CN017PqYP51OX3bSJGxQY_!!6000000001714-2-tps-200-200.png"
     _description = "DingTalk Custom Robot Group Message Using Webhook"
 
