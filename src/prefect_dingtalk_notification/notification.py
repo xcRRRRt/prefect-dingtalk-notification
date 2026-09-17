@@ -73,6 +73,7 @@ class DingTalkCustomRobotGroupWebhookNotification(NotificationBlock):
         logger = self.logger
 
         async with httpx.AsyncClient() as client:
+            logger.info(f"body: {body}")
             try:
                 resp = await client.post(
                     self.base_url,
