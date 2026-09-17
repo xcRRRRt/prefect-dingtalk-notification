@@ -105,8 +105,8 @@ automation = Automation(
     actions=[
         SendNotification(
             block_document_id=block_id,
-            subject="Build notification",
-            body=('{"msgtype":"text","text":{"content":"Prefect CI build finished"}}'),
+            subject="",  # leave blank
+            body='{"msgtype":"text","text":{"content":"Prefect notification test"}}',
         )
     ],
 ).create()
